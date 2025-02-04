@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 type LocationType = {
   latitude: number;
   longitude: number;
-} | null;
+};
 
 export default function useCurrentLocation() {
-  const [location, setLocation] = useState<LocationType>(null);
+  const [location, setLocation] = useState<LocationType>();
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
