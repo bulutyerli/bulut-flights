@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import DatePick from "../../components/DatePick/DatePick";
 import useCurrentLocation from "../../hooks/useCurrentLocation/useCurrentLocation";
@@ -8,6 +8,7 @@ import {
   searchAirports,
 } from "../../api/flightsApi/flightsApi";
 import { AirportsListType } from "../../types/types";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function FlightsPage() {
   const { location } = useCurrentLocation();
@@ -88,7 +89,11 @@ export default function FlightsPage() {
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        width: "100%",
+      }}
+    >
       <Typography variant="h3" gutterBottom>
         Flights
       </Typography>
@@ -98,16 +103,32 @@ export default function FlightsPage() {
           flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
           gap: "2rem",
+          border: "1px solid #c4c4c4",
+          padding: "1rem",
+          paddingBottom: "2rem",
+          borderRadius: "10px",
+          position: "relative",
         }}
       >
         <SearchBar
-          to={searchData.to}
           from={searchData.from}
           onSearchChange={handleSearchChange}
           fromAirports={fromAirports}
           toAirports={toAirports}
         />
         <DatePick />
+        <Button
+          variant="contained"
+          sx={{
+            position: "absolute",
+            bottom: "0",
+            transform: "translateX(-50%) translateY(50%)",
+            left: "50%",
+          }}
+        >
+          <SearchIcon />
+          Search
+        </Button>
       </Box>
       {error && (
         <Typography variant="h6" sx={{ color: "red", marginTop: "1rem" }}>

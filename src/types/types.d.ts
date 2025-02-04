@@ -7,7 +7,6 @@ export interface AirportsListType {
 
 export interface SearchBarType {
   from: string;
-  to: string;
   onSearchChange: (key: "from" | "to", value: string) => void;
   fromAirports: AirportsListType[];
   toAirports: AirportsListType[];

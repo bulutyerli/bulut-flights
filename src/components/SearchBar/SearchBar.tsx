@@ -6,12 +6,11 @@ import { SearchBarType } from "../../types/types";
 
 export default function SearchBar({
   from,
-  to,
   onSearchChange,
   fromAirports,
   toAirports,
 }: SearchBarType) {
-  console.log(toAirports, " testt");
+  console.log(from, " testt");
   return (
     <Box
       component="section"
@@ -19,25 +18,28 @@ export default function SearchBar({
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
         alignItems: "center",
+        justifyContent: "center",
         gap: "1rem",
         width: "100%",
+        flexShrink: 1,
       }}
     >
       <Autocomplete
         sx={{
-          width: {
-            xs: "100%",
-            lg: "300px",
-          },
+          width: "100%",
         }}
         options={fromAirports}
-        autoHighlight
+        freeSolo
+        disableClearable
         inputValue={from}
-        getOptionLabel={(option) => option.presentation?.suggestionTitle || ""}
+        autoHighlight
+        getOptionLabel={(option) =>
+          typeof option === "string"
+            ? option
+            : option.presentation?.suggestionTitle || ""
+        }
         onInputChange={(_, newValue) => {
-          if (newValue.length > 2) {
-            onSearchChange("from", newValue);
-          }
+          onSearchChange("from", newValue);
         }}
         renderInput={(params) => (
           <TextField
@@ -65,14 +67,17 @@ export default function SearchBar({
       />
       <Autocomplete
         sx={{
-          width: {
-            xs: "100%",
-            lg: "300px",
-          },
+          width: "100%",
         }}
+        disableClearable
         options={toAirports}
         autoHighlight
-        getOptionLabel={(option) => option.presentation?.suggestionTitle || ""}
+        freeSolo
+        getOptionLabel={(option) =>
+          typeof option === "string"
+            ? option
+            : option.presentation?.suggestionTitle || ""
+        }
         onInputChange={(_, newValue) => {
           if (newValue.length > 2) {
             onSearchChange("to", newValue);

@@ -10,11 +10,23 @@ export default function DatePick() {
         display: "flex",
         gap: "1rem",
         flexDirection: { xs: "column", sm: "row" },
+        width: "100%",
+        flexShrink: 2,
       }}
     >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker label="Departure" />
-        <DatePicker label="Return" />
+        <DatePicker
+          sx={{
+            width: "100%",
+          }}
+          label="Departure"
+        />
+        <DatePicker
+          sx={{
+            width: "100%",
+          }}
+          label="Return"
+        />
       </LocalizationProvider>
     </Box>
   );
