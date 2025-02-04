@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export interface AirportsListType {
   presentation: {
     title: string;
@@ -30,4 +32,12 @@ export interface SearchDataType {
     id: string;
     entityId: string;
   };
+  fromDate?: string | null;
+  toDate?: string | null;
+}
+
+interface DatePickType {
+  depDate: Dayjs | null;
+  returnDate: Dayjs | null;
+  onDateChange: (key: "departure" | "return", date: Dayjs | null) => void;
 }

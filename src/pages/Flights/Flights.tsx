@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { searchAirports } from "../../api/flightsApi/flightsApi";
 import { AirportsListType, SearchDataType } from "../../types/types";
 import SearchIcon from "@mui/icons-material/Search";
+import dayjs, { Dayjs } from "dayjs";
 
 export default function FlightsPage() {
   const [searchData, setSearchData] = useState({
@@ -17,6 +18,8 @@ export default function FlightsPage() {
   const [selectedAirports, setSelectedAirports] = useState<SearchDataType>({
     from: { name: "", id: "", entityId: "" },
     to: { name: "", id: "", entityId: "" },
+    fromDate: null,
+    toDate: null,
   });
 
   useEffect(() => {
@@ -46,7 +49,6 @@ export default function FlightsPage() {
         const getAirports = async () => {
           try {
             const airportData = await searchAirports(searchData.to);
-            console.log(airportData, "data");
             setToAirports(airportData.data);
           } catch {
             setError("Error fetching destination airports");
@@ -76,11 +78,29 @@ export default function FlightsPage() {
   const handleAirportSwap = () => {
     const temp = selectedAirports.from;
 
-    setSelectedAirports(() => ({
+    setSelectedAirports((prev) => ({
+      ...prev,
       from: selectedAirports.to,
       to: temp,
     }));
   };
+
+  const handleDatePick = (key: "departure" | "return", date: Dayjs | null) => {
+    const formattedDate = date?.format("YYYY-MM-DD");
+    if (key === "departure") {
+      setSelectedAirports((prev) => ({
+        ...prev,
+        fromDate: formattedDate,
+      }));
+    } else {
+      setSelectedAirports((prev) => ({
+        ...prev,
+        toDate: formattedDate,
+      }));
+    }
+  };
+
+  console.log(selectedAirports.fromDate, "final");
 
   return (
     <Box
@@ -115,7 +135,15 @@ export default function FlightsPage() {
           toAirports={toAirports}
           swap={handleAirportSwap}
         />
-        <DatePick />
+        <DatePick
+          depDate={
+            selectedAirports.fromDate ? dayjs(selectedAirports.fromDate) : null
+          }
+          returnDate={
+            selectedAirports.toDate ? dayjs(selectedAirports.toDate) : null
+          }
+          onDateChange={handleDatePick}
+        />
         <Button
           variant="contained"
           sx={{
