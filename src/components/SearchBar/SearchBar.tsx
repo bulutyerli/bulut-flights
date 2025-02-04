@@ -1,4 +1,9 @@
-import { Autocomplete, InputAdornment, TextField } from "@mui/material";
+import {
+  Autocomplete,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -6,11 +11,15 @@ import { SearchBarType } from "../../types/types";
 
 export default function SearchBar({
   from,
-  onSearchChange,
-  fromAirports,
-  toAirports,
+  to,
+  fromValue,
+  toValue,
+  onInputChange,
+  onSelect,
+  fromAirports = [],
+  toAirports = [],
+  swap,
 }: SearchBarType) {
-  console.log(from, " testt");
   return (
     <Box
       component="section"
@@ -29,23 +38,32 @@ export default function SearchBar({
           width: "100%",
         }}
         options={fromAirports}
-        freeSolo
         disableClearable
-        inputValue={from}
         autoHighlight
-        getOptionLabel={(option) =>
-          typeof option === "string"
-            ? option
-            : option.presentation?.suggestionTitle || ""
-        }
+        inputValue={from}
+        value={fromValue}
+        getOptionLabel={(option) => option?.presentation?.suggestionTitle || ""}
         onInputChange={(_, newValue) => {
-          onSearchChange("from", newValue);
+          onInputChange("from", newValue);
+        }}
+        onChange={(_, selectedOption) => {
+          if (selectedOption) {
+            onSelect("from", selectedOption);
+          }
+        }}
+        renderOption={(props, option) => {
+          const { key, ...optionProps } = props;
+          return (
+            <Box key={key} component="li" {...optionProps}>
+              {option.presentation.suggestionTitle}
+            </Box>
+          );
         }}
         renderInput={(params) => (
           <TextField
             {...params}
             fullWidth
-            label="Where to?"
+            label="Where from?"
             slotProps={{
               input: {
                 ...params.InputProps,
@@ -60,11 +78,14 @@ export default function SearchBar({
           />
         )}
       />
-      <CompareArrowsIcon
-        sx={{
-          fontSize: 30,
-        }}
-      />
+      <IconButton onClick={swap}>
+        <CompareArrowsIcon
+          sx={{
+            fontSize: 30,
+          }}
+        />
+      </IconButton>
+
       <Autocomplete
         sx={{
           width: "100%",
@@ -72,16 +93,24 @@ export default function SearchBar({
         disableClearable
         options={toAirports}
         autoHighlight
-        freeSolo
-        getOptionLabel={(option) =>
-          typeof option === "string"
-            ? option
-            : option.presentation?.suggestionTitle || ""
-        }
+        value={toValue}
+        inputValue={to}
+        getOptionLabel={(option) => option?.presentation?.suggestionTitle || ""}
         onInputChange={(_, newValue) => {
-          if (newValue.length > 2) {
-            onSearchChange("to", newValue);
+          onInputChange("to", newValue);
+        }}
+        onChange={(_, selectedOption) => {
+          if (selectedOption) {
+            onSelect("to", selectedOption);
           }
+        }}
+        renderOption={(props, option) => {
+          const { key, ...optionProps } = props;
+          return (
+            <Box key={key} component="li" {...optionProps}>
+              {option.presentation.suggestionTitle}
+            </Box>
+          );
         }}
         renderInput={(params) => (
           <TextField

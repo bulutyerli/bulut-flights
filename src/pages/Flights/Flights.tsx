@@ -1,46 +1,23 @@
 import { Box, Button, Typography } from "@mui/material";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import DatePick from "../../components/DatePick/DatePick";
-import useCurrentLocation from "../../hooks/useCurrentLocation/useCurrentLocation";
 import { useEffect, useState } from "react";
-import {
-  getNearbyAirports,
-  searchAirports,
-} from "../../api/flightsApi/flightsApi";
-import { AirportsListType } from "../../types/types";
+import { searchAirports } from "../../api/flightsApi/flightsApi";
+import { AirportsListType, SearchDataType } from "../../types/types";
 import SearchIcon from "@mui/icons-material/Search";
 
 export default function FlightsPage() {
-  const { location } = useCurrentLocation();
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
-    date: null,
   });
   const [error, setError] = useState<string>("");
   const [fromAirports, setFromAirports] = useState<AirportsListType[]>([]);
   const [toAirports, setToAirports] = useState<AirportsListType[]>([]);
-
-  useEffect(() => {
-    if (location) {
-      const getData = async () => {
-        try {
-          const airportData = await getNearbyAirports(
-            location.latitude.toString(),
-            location.longitude.toString(),
-          );
-          setSearchData((prev) => ({
-            ...prev,
-            from: airportData.data.nearby?.[0]?.presentation?.suggestionTitle,
-          }));
-        } catch {
-          setError("Error fetching nearby airports");
-        }
-      };
-
-      getData();
-    }
-  }, [location]);
+  const [selectedAirports, setSelectedAirports] = useState<SearchDataType>({
+    from: { name: "", id: "", entityId: "" },
+    to: { name: "", id: "", entityId: "" },
+  });
 
   useEffect(() => {
     if (searchData.from) {
@@ -69,6 +46,7 @@ export default function FlightsPage() {
         const getAirports = async () => {
           try {
             const airportData = await searchAirports(searchData.to);
+            console.log(airportData, "data");
             setToAirports(airportData.data);
           } catch {
             setError("Error fetching destination airports");
@@ -84,8 +62,24 @@ export default function FlightsPage() {
     }
   }, [searchData.to]);
 
-  const handleSearchChange = (key: "from" | "to", value: string) => {
+  const handleInputChange = (key: "from" | "to", value: string) => {
     setSearchData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleOptionSelect = (
+    key: "from" | "to",
+    airport: AirportsListType,
+  ) => {
+    setSelectedAirports((prev) => ({ ...prev, [key]: airport }));
+  };
+
+  const handleAirportSwap = () => {
+    const temp = selectedAirports.from;
+
+    setSelectedAirports(() => ({
+      from: selectedAirports.to,
+      to: temp,
+    }));
   };
 
   return (
@@ -112,9 +106,14 @@ export default function FlightsPage() {
       >
         <SearchBar
           from={searchData.from}
-          onSearchChange={handleSearchChange}
+          to={searchData.to}
+          fromValue={selectedAirports.from}
+          toValue={selectedAirports.to}
+          onSelect={handleOptionSelect}
+          onInputChange={handleInputChange}
           fromAirports={fromAirports}
           toAirports={toAirports}
+          swap={handleAirportSwap}
         />
         <DatePick />
         <Button

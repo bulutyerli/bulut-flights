@@ -50,3 +50,42 @@ export async function searchAirports(query: string) {
     throw error;
   }
 }
+
+export async function getFlights(
+  originSkyId: string,
+  destinationSkyId: string,
+  adults: string,
+  originEntityId: string,
+  destinationEntityId: string,
+  date: string,
+) {
+  const options = {
+    method: "GET",
+    url: "https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchFlights",
+    params: {
+      originSkyId,
+      destinationSkyId,
+      originEntityId,
+      destinationEntityId,
+      date,
+      cabinClass: "economy",
+      adults,
+      sortBy: "best",
+      currency: "USD",
+      market: "en-US",
+      countryCode: "US",
+    },
+    headers: {
+      "x-rapidapi-key": RAPIDAPI_KEY,
+      "x-rapidapi-host": HOST,
+    },
+  };
+
+  try {
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
