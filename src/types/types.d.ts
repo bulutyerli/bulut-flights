@@ -72,3 +72,8 @@ export interface FlightData {
   departure: FlightList[];
   return: FlightList[];
 }
+
+export interface PassengerCountProps {
+  count: number;
+  onCountChange: (newCount: number) => void;
+}

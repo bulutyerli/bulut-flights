@@ -12,6 +12,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import dayjs, { Dayjs } from "dayjs";
 import FlightTable from "../../components/FlightTable/FlightTable";
 import TripDropDown from "../../components/TripDropDown/TripDropDown";
+import PassengerCount from "../../components/PassengerCount/PassengerCount";
 
 export default function FlightsPage() {
   const [searchData, setSearchData] = useState({
@@ -33,6 +34,7 @@ export default function FlightsPage() {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [trip, setTrip] = useState<"One Way" | "Round Trip">("Round Trip");
+  const [passengerCount, setPassengerCount] = useState<number>(1);
 
   useEffect(() => {
     if (searchData.from) {
@@ -123,15 +125,29 @@ export default function FlightsPage() {
         const flights = await getFlights({
           originSkyId: selectedAirports.from.skyId,
           destinationSkyId: selectedAirports.to.skyId,
-          adults: "3",
+          adults: passengerCount.toString(),
           originEntityId: selectedAirports.from.entityId,
           destinationEntityId: selectedAirports.to.entityId,
           date: selectedAirports.fromDate || dayjs().format("YYYY-MM-DD"),
         });
 
+        let returnFlights = [];
+
+        if (trip === "Round Trip" && selectedAirports.toDate) {
+          returnFlights = await getFlights({
+            originSkyId: selectedAirports.to.skyId,
+            destinationSkyId: selectedAirports.from.skyId,
+            adults: passengerCount.toString(),
+            originEntityId: selectedAirports.to.entityId,
+            destinationEntityId: selectedAirports.from.entityId,
+            date: selectedAirports.toDate || dayjs().format("YYYY-MM-DD"),
+          });
+        }
+
         setFlightList((prev) => ({
           ...prev,
           departure: flights.data.itineraries,
+          return: returnFlights.data?.itineraries || [],
         }));
       } catch {
         setError("Error fetching flights");
@@ -149,6 +165,10 @@ export default function FlightsPage() {
     setTrip(event.target.value as "One Way" | "Round Trip");
   };
 
+  const handlePassengerCountChange = (newCount: number) => {
+    setPassengerCount(newCount);
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       <Typography variant="h3" gutterBottom>
@@ -160,9 +180,14 @@ export default function FlightsPage() {
           justifyContent: "flex-start",
           width: "100%",
           marginBottom: "1rem",
+          gap: "2rem",
         }}
       >
         <TripDropDown trip={trip} onChange={handleTripChange} />
+        <PassengerCount
+          count={passengerCount}
+          onCountChange={handlePassengerCountChange}
+        />
       </Box>{" "}
       <Box
         sx={{
