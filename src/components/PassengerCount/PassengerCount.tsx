@@ -20,6 +20,7 @@ export default function PassengerCount({
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <IconButton
+        aria-label="Decrement"
         onClick={handleDecrement}
         sx={{ padding: "0 10px", minWidth: "30px", height: "40px" }}
       >
@@ -42,6 +43,7 @@ export default function PassengerCount({
         }}
       />
       <IconButton
+        aria-label="Increment"
         onClick={handleIncrement}
         sx={{ padding: "0 10px", minWidth: "30px", height: "40px" }}
       >

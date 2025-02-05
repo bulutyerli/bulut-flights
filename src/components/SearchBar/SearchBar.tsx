@@ -78,7 +78,7 @@ export default function SearchBar({
           />
         )}
       />
-      <IconButton onClick={swap}>
+      <IconButton aria-label="Swap flights" onClick={swap}>
         <CompareArrowsIcon
           sx={{
             fontSize: 30,

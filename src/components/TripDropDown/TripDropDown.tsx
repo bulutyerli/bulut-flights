@@ -21,15 +21,19 @@ export default function TripDropDown({
         textAlign: "left",
       }}
     >
-      <InputLabel id="demo-simple-select-label">Trip</InputLabel>
+      <InputLabel id="select-trip">Trip</InputLabel>
       <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
+        labelId="roundtrip"
+        id="Trip-dropdown"
         value={trip}
         onChange={onChange}
       >
-        <MenuItem value={"One Way"}>One Way</MenuItem>
-        <MenuItem value={"Round Trip"}>Round Trip</MenuItem>
+        <MenuItem aria-label="one-way" value={"One Way"}>
+          One Way
+        </MenuItem>
+        <MenuItem aria-label="round-trip" value={"Round Trip"}>
+          Round Trip
+        </MenuItem>
       </Select>
     </FormControl>
   );
