@@ -1,82 +1,33 @@
 import { Box, Button, SelectChangeEvent, Typography } from "@mui/material";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import DatePick from "../../components/DatePick/DatePick";
-import { useEffect, useState } from "react";
-import { getFlights, searchAirports } from "../../api/flightsApi/flightsApi";
-import {
-  AirportsListType,
-  FlightData,
-  SearchDataType,
-} from "../../types/types";
+import { useState } from "react";
+import { AirportsListType, SearchDataType } from "../../types/types";
 import SearchIcon from "@mui/icons-material/Search";
 import dayjs, { Dayjs } from "dayjs";
 import FlightTable from "../../components/FlightTable/FlightTable";
 import TripDropDown from "../../components/TripDropDown/TripDropDown";
 import PassengerCount from "../../components/PassengerCount/PassengerCount";
+import { useAirportSearch } from "../../hooks/useAirportSearch/useAirportSearch";
+import { useFlightSearch } from "../../hooks/useFlightSearch/useFlightSearch";
 
 export default function FlightsPage() {
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
   });
-  const [error, setError] = useState<string>("");
-  const [fromAirports, setFromAirports] = useState<AirportsListType[]>([]);
-  const [toAirports, setToAirports] = useState<AirportsListType[]>([]);
+
   const [selectedAirports, setSelectedAirports] = useState<SearchDataType>({
     from: { name: "", skyId: "", entityId: "" },
     to: { name: "", skyId: "", entityId: "" },
     fromDate: null,
     toDate: null,
   });
-  const [flightList, setFlightList] = useState<FlightData>({
-    departure: [],
-    return: [],
-  });
-  const [loading, setLoading] = useState<boolean>(false);
   const [trip, setTrip] = useState<"One Way" | "Round Trip">("Round Trip");
   const [passengerCount, setPassengerCount] = useState<number>(1);
-
-  useEffect(() => {
-    if (searchData.from) {
-      const handler = setTimeout(() => {
-        const getAirports = async () => {
-          try {
-            const airportData = await searchAirports(searchData.from);
-            setFromAirports(airportData.data);
-          } catch {
-            setError("Error fetching airports");
-          }
-        };
-
-        getAirports();
-      }, 500);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }
-  }, [searchData.from]);
-
-  useEffect(() => {
-    if (searchData.to) {
-      const handler = setTimeout(() => {
-        const getAirports = async () => {
-          try {
-            const airportData = await searchAirports(searchData.to);
-            setToAirports(airportData.data);
-          } catch {
-            setError("Error fetching destination airports");
-          }
-        };
-
-        getAirports();
-      }, 500);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }
-  }, [searchData.to]);
+  const { airports: fromAirports } = useAirportSearch(searchData.from);
+  const { airports: toAirports } = useAirportSearch(searchData.to);
+  const { flightList, loading, error, fetchFlights } = useFlightSearch();
 
   const handleInputChange = (key: "from" | "to", value: string) => {
     setSearchData((prev) => ({ ...prev, [key]: value }));
@@ -114,59 +65,16 @@ export default function FlightsPage() {
     }
   };
 
-  const fetchFlights = async () => {
-    if (
-      selectedAirports.fromDate &&
-      selectedAirports.from.skyId &&
-      selectedAirports.to.skyId
-    ) {
-      try {
-        setLoading(true);
-        const flights = await getFlights({
-          originSkyId: selectedAirports.from.skyId,
-          destinationSkyId: selectedAirports.to.skyId,
-          adults: passengerCount.toString(),
-          originEntityId: selectedAirports.from.entityId,
-          destinationEntityId: selectedAirports.to.entityId,
-          date: selectedAirports.fromDate || dayjs().format("YYYY-MM-DD"),
-        });
-
-        let returnFlights = [];
-
-        if (trip === "Round Trip" && selectedAirports.toDate) {
-          returnFlights = await getFlights({
-            originSkyId: selectedAirports.to.skyId,
-            destinationSkyId: selectedAirports.from.skyId,
-            adults: passengerCount.toString(),
-            originEntityId: selectedAirports.to.entityId,
-            destinationEntityId: selectedAirports.from.entityId,
-            date: selectedAirports.toDate || dayjs().format("YYYY-MM-DD"),
-          });
-        }
-
-        setFlightList((prev) => ({
-          ...prev,
-          departure: flights.data.itineraries,
-          return: returnFlights.data?.itineraries || [],
-        }));
-      } catch {
-        setError("Error fetching flights");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setError(
-        "Please select valid departure and destination airports with dates.",
-      );
-    }
-  };
-
   const handleTripChange = (event: SelectChangeEvent) => {
     setTrip(event.target.value as "One Way" | "Round Trip");
   };
 
   const handlePassengerCountChange = (newCount: number) => {
     setPassengerCount(newCount);
+  };
+
+  const handleSearchClick = async () => {
+    await fetchFlights(selectedAirports, passengerCount, trip);
   };
 
   return (
@@ -231,7 +139,7 @@ export default function FlightsPage() {
             transform: "translateX(-50%) translateY(50%)",
             left: "50%",
           }}
-          onClick={fetchFlights}
+          onClick={handleSearchClick}
         >
           <SearchIcon />
           Search
