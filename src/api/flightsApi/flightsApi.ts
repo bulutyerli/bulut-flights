@@ -51,14 +51,21 @@ export async function searchAirports(query: string) {
   }
 }
 
-export async function getFlights(
-  originSkyId: string,
-  destinationSkyId: string,
-  adults: string,
-  originEntityId: string,
-  destinationEntityId: string,
-  date: string,
-) {
+export async function getFlights({
+  originSkyId,
+  destinationSkyId,
+  adults,
+  originEntityId,
+  destinationEntityId,
+  date,
+}: {
+  originSkyId: string;
+  destinationSkyId: string;
+  adults: string;
+  originEntityId: string;
+  destinationEntityId: string;
+  date: string;
+}) {
   const options = {
     method: "GET",
     url: "https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchFlights",

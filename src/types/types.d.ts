@@ -24,20 +24,51 @@ export interface SearchBarType {
 export interface SearchDataType {
   from: {
     name: string;
-    id: string;
+    skyId: string;
     entityId: string;
   };
   to: {
     name: string;
-    id: string;
+    skyId: string;
     entityId: string;
   };
   fromDate?: string | null;
   toDate?: string | null;
 }
 
-interface DatePickType {
+export interface DatePickType {
   depDate: Dayjs | null;
   returnDate: Dayjs | null;
   onDateChange: (key: "departure" | "return", date: Dayjs | null) => void;
+  isOneWay: boolean;
+}
+
+export interface FlightList {
+  id: string;
+  price: {
+    formatted: string;
+  };
+  legs: {
+    departure: string;
+    arrival: string;
+    durationInMinutes: number;
+    stopCount: number;
+    origin: {
+      iataCode: string;
+    };
+    destination: {
+      iataCode: string;
+    };
+    carriers: {
+      marketing: {
+        name: string;
+        logoUrl: string;
+      }[];
+    };
+  }[];
+}
+
+export interface FlightData {
+  departure: FlightList[];
+  return: FlightList[];
 }

@@ -9,6 +9,7 @@ export default function DatePick({
   depDate,
   returnDate,
   onDateChange,
+  isOneWay,
 }: DatePickType) {
   return (
     <Box
@@ -31,16 +32,18 @@ export default function DatePick({
             onDateChange("departure", date);
           }}
         />
-        <DatePicker
-          sx={{
-            width: "100%",
-          }}
-          label="Return"
-          value={returnDate || null}
-          onChange={(date: Dayjs | null) => {
-            onDateChange("return", date);
-          }}
-        />
+        {!isOneWay && (
+          <DatePicker
+            sx={{
+              width: "100%",
+            }}
+            label="Return"
+            value={returnDate || null}
+            onChange={(date: Dayjs | null) => {
+              onDateChange("return", date);
+            }}
+          />
+        )}
       </LocalizationProvider>
     </Box>
   );

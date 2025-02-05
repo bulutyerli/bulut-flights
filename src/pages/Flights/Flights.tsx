@@ -1,11 +1,17 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, SelectChangeEvent, Typography } from "@mui/material";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import DatePick from "../../components/DatePick/DatePick";
 import { useEffect, useState } from "react";
-import { searchAirports } from "../../api/flightsApi/flightsApi";
-import { AirportsListType, SearchDataType } from "../../types/types";
+import { getFlights, searchAirports } from "../../api/flightsApi/flightsApi";
+import {
+  AirportsListType,
+  FlightData,
+  SearchDataType,
+} from "../../types/types";
 import SearchIcon from "@mui/icons-material/Search";
 import dayjs, { Dayjs } from "dayjs";
+import FlightTable from "../../components/FlightTable/FlightTable";
+import TripDropDown from "../../components/TripDropDown/TripDropDown";
 
 export default function FlightsPage() {
   const [searchData, setSearchData] = useState({
@@ -16,11 +22,17 @@ export default function FlightsPage() {
   const [fromAirports, setFromAirports] = useState<AirportsListType[]>([]);
   const [toAirports, setToAirports] = useState<AirportsListType[]>([]);
   const [selectedAirports, setSelectedAirports] = useState<SearchDataType>({
-    from: { name: "", id: "", entityId: "" },
-    to: { name: "", id: "", entityId: "" },
+    from: { name: "", skyId: "", entityId: "" },
+    to: { name: "", skyId: "", entityId: "" },
     fromDate: null,
     toDate: null,
   });
+  const [flightList, setFlightList] = useState<FlightData>({
+    departure: [],
+    return: [],
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [trip, setTrip] = useState<"One Way" | "Round Trip">("Round Trip");
 
   useEffect(() => {
     if (searchData.from) {
@@ -100,17 +112,58 @@ export default function FlightsPage() {
     }
   };
 
-  console.log(selectedAirports.fromDate, "final");
+  const fetchFlights = async () => {
+    if (
+      selectedAirports.fromDate &&
+      selectedAirports.from.skyId &&
+      selectedAirports.to.skyId
+    ) {
+      try {
+        setLoading(true);
+        const flights = await getFlights({
+          originSkyId: selectedAirports.from.skyId,
+          destinationSkyId: selectedAirports.to.skyId,
+          adults: "3",
+          originEntityId: selectedAirports.from.entityId,
+          destinationEntityId: selectedAirports.to.entityId,
+          date: selectedAirports.fromDate || dayjs().format("YYYY-MM-DD"),
+        });
+
+        setFlightList((prev) => ({
+          ...prev,
+          departure: flights.data.itineraries,
+        }));
+      } catch {
+        setError("Error fetching flights");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setError(
+        "Please select valid departure and destination airports with dates.",
+      );
+    }
+  };
+
+  const handleTripChange = (event: SelectChangeEvent) => {
+    setTrip(event.target.value as "One Way" | "Round Trip");
+  };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-      }}
-    >
+    <Box sx={{ width: "100%" }}>
       <Typography variant="h3" gutterBottom>
         Flights
       </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-start",
+          width: "100%",
+          marginBottom: "1rem",
+        }}
+      >
+        <TripDropDown trip={trip} onChange={handleTripChange} />
+      </Box>{" "}
       <Box
         sx={{
           display: "flex",
@@ -136,6 +189,7 @@ export default function FlightsPage() {
           swap={handleAirportSwap}
         />
         <DatePick
+          isOneWay={trip === "One Way"}
           depDate={
             selectedAirports.fromDate ? dayjs(selectedAirports.fromDate) : null
           }
@@ -152,14 +206,26 @@ export default function FlightsPage() {
             transform: "translateX(-50%) translateY(50%)",
             left: "50%",
           }}
+          onClick={fetchFlights}
         >
           <SearchIcon />
           Search
         </Button>
       </Box>
       {error && (
-        <Typography variant="h6" sx={{ color: "red", marginTop: "1rem" }}>
+        <Typography variant="h6" sx={{ color: "red", marginTop: "2rem" }}>
           {error}
+        </Typography>
+      )}
+      {flightList?.departure && flightList.departure.length > 0 && (
+        <FlightTable title="Departure" flightData={flightList.departure} />
+      )}
+      {flightList?.return && flightList.return.length > 0 && (
+        <FlightTable title="Return Flights" flightData={flightList.return} />
+      )}
+      {loading && (
+        <Typography variant="h6" sx={{ color: "green", marginTop: "2rem" }}>
+          Loading...
         </Typography>
       )}
     </Box>
